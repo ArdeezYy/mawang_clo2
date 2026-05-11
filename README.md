@@ -49,7 +49,7 @@ docker compose up --build -d
 ## Branch Demo
 
 - `secure-login`: versi aman. Default `docker compose up --build -d` menjalankan `LOGIN_MODE=secure`, sehingga payload SQL injection di login gagal.
-- `vulnerable-login`: versi rentan untuk demo. Default `docker compose up --build -d` menjalankan `LOGIN_MODE=vulnerable`, sehingga form login utama sengaja memakai query SQL mentah dan dapat dibobol dengan payload SQL injection.
+- `vulnerable-login`: versi rentan untuk demo. Default `docker compose up --build -d` menjalankan `LOGIN_MODE=vulnerable`, sehingga form login utama sengaja memakai query SQL mentah dan output komentar sengaja tidak di-escape. Payload SQL injection dan XSS dapat dibobol untuk kebutuhan demonstrasi.
 
 File `docker-compose.vulnerable.yml` tetap disediakan sebagai override tambahan jika ingin menyalakan mode rentan dari branch `secure-login`, tetapi untuk skenario presentasi paling rapi adalah berpindah branch:
 
@@ -84,7 +84,8 @@ docker compose up --build -d
 - Login sebagai `admin`, lalu buka `/admin.php` untuk melihat monitoring tabel `users` dan `comments`.
 - Login dengan akun demo, tambah komentar, lalu cek komentar tampil di halaman utama.
 - Coba SQL injection di form login: `' OR '1'='1`; login harus gagal.
-- Coba XSS di komentar: `<script>alert(1)</script>`; teks harus tampil mentah dan tidak dieksekusi.
+- Di `secure-login`, coba XSS di komentar: `<script>alert(1)</script>`; teks harus tampil mentah dan tidak dieksekusi.
+- Di `vulnerable-login`, payload XSS yang sama sengaja dieksekusi untuk menunjukkan risiko jika output tidak di-escape.
 - Kirim komentar lebih dari 500 karakter; aplikasi harus menolak.
 - Submit form POST tanpa CSRF token harus ditolak/redirect.
 - Ulangi login gagal; respons memiliki delay sekitar 2 detik.

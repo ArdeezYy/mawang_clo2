@@ -49,7 +49,7 @@ require __DIR__ . '/templates/header.php';
                     <tr>
                         <td><?= e((string) $row['id']) ?></td>
                         <td><?= e($row['username']) ?></td>
-                        <td><?= e($row['body']) ?></td>
+                        <td><?= comment_body($row['body']) ?></td>
                         <td><?= e($row['created_at']) ?></td>
                     </tr>
                 <?php endforeach; ?>

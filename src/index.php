@@ -40,7 +40,7 @@ require __DIR__ . '/templates/header.php';
                 <strong><?= e($comment['username']) ?></strong>
                 <span><?= e($comment['created_at']) ?></span>
             </header>
-            <p><?= e($comment['body']) ?></p>
+            <p><?= comment_body($comment['body']) ?></p>
         </article>
     <?php endforeach; ?>
 </section>

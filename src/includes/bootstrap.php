@@ -31,6 +31,15 @@ function e(?string $value): string
     return htmlspecialchars($value ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+function comment_body(?string $value): string
+{
+    if ((getenv('LOGIN_MODE') ?: 'secure') === 'vulnerable') {
+        return $value ?? '';
+    }
+
+    return e($value);
+}
+
 function redirect(string $path): never
 {
     header('Location: ' . $path, true, 303);
