@@ -48,10 +48,18 @@ docker compose up --build -d
 
 ## Branch Demo
 
-- `secure-login`: versi aman dengan prepared statement, validasi input, CSRF token, delay login gagal, session hardening, dan hash password.
-- `vulnerable-login`: versi sementara yang sengaja memakai query SQL mentah di form login utama, tetapi kontrol lain seperti CSRF, XSS escaping, admin authorization, HTTPS, dan session hardening tetap aktif.
+- `secure-login`: versi aman. Default `docker compose up --build -d` menjalankan `LOGIN_MODE=secure`, sehingga payload SQL injection di login gagal.
+- `vulnerable-login`: versi rentan untuk demo. Default `docker compose up --build -d` menjalankan `LOGIN_MODE=vulnerable`, sehingga form login utama sengaja memakai query SQL mentah dan dapat dibobol dengan payload SQL injection.
 
-Pada implementasi ini mode tersebut disediakan melalui override compose `docker-compose.vulnerable.yml`. Jika perlu branch Git terpisah untuk demo, buat branch `secure-login` dari kondisi default dan branch `vulnerable-login` dengan override tersebut.
+File `docker-compose.vulnerable.yml` tetap disediakan sebagai override tambahan jika ingin menyalakan mode rentan dari branch `secure-login`, tetapi untuk skenario presentasi paling rapi adalah berpindah branch:
+
+```powershell
+git switch secure-login
+docker compose up --build -d
+
+git switch vulnerable-login
+docker compose up --build -d
+```
 
 ## Kontrol Keamanan
 
