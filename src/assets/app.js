@@ -39,3 +39,16 @@ function wireSignupChecklist() {
     password.addEventListener('input', update);
     update();
 }
+
+function wireCommentCounter(textareaId, counterId) {
+    const textarea = document.getElementById(textareaId);
+    const counter = document.getElementById(counterId);
+    if (!textarea || !counter) return;
+
+    const update = () => {
+        counter.textContent = String(textarea.value.length);
+    };
+
+    textarea.addEventListener('input', update);
+    update();
+}

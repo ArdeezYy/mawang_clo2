@@ -14,16 +14,19 @@ $comments = $pdo->query(
 require __DIR__ . '/templates/header.php';
 ?>
 <section class="hero">
-    <h1>Admin monitoring</h1>
-    <p>Panel ini hanya bisa diakses role admin dan memakai query database yang aman. Password plaintext tidak disimpan; kolom password menampilkan hash bcrypt yang sudah memuat salt.</p>
+    <div>
+        <span class="eyebrow">Admin</span>
+        <h1>Monitoring aktivitas</h1>
+        <p>Lihat daftar pengguna dan komentar yang tersimpan di sistem.</p>
+    </div>
 </section>
 
 <div class="grid">
     <section class="table-wrap">
-        <h2>Users</h2>
+        <h2>Pengguna</h2>
         <table>
             <thead>
-                <tr><th>ID</th><th>Username</th><th>Password hash</th><th>Role</th><th>Dibuat</th></tr>
+                <tr><th>ID</th><th>Username</th><th>Password tersimpan</th><th>Role</th><th>Dibuat</th></tr>
             </thead>
             <tbody>
                 <?php foreach ($users as $row): ?>
@@ -40,7 +43,7 @@ require __DIR__ . '/templates/header.php';
     </section>
 
     <section class="table-wrap">
-        <h2>Comments</h2>
+        <h2>Komentar</h2>
         <table>
             <thead>
                 <tr><th>ID</th><th>User</th><th>Komentar</th><th>Dibuat</th></tr>

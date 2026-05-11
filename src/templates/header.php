@@ -6,7 +6,7 @@ $user = current_user($pdo);
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>CLO 2 Secure Comments</title>
+    <title>Secure Comments</title>
     <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
@@ -27,11 +27,6 @@ $user = current_user($pdo);
             <?php endif; ?>
         </div>
     </nav>
-    <div class="status-strip">
-        <span>HTTPS aktif</span>
-        <span>Password hash + salt</span>
-        <span>Batas komentar 500 karakter</span>
-    </div>
 </header>
 <main class="container">
 <?php foreach (flashes() as $item): ?>

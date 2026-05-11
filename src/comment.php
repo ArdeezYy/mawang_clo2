@@ -25,15 +25,17 @@ require __DIR__ . '/templates/header.php';
 ?>
 <section class="panel">
     <h1>Tulis komentar</h1>
-    <p class="meta">Komentar dibatasi 500 karakter di sisi server untuk mencegah input berlebihan.</p>
+    <p class="meta">Tulis komentar ringkas agar mudah dibaca oleh semua orang.</p>
     <form class="stack" method="post" action="/comment.php">
         <?= csrf_field() ?>
         <div class="field">
             <label for="body">Komentar</label>
             <textarea id="body" name="body" maxlength="500" required></textarea>
-            <span class="help">Maksimal 500 karakter.</span>
+            <span class="help"><span id="comment-count">0</span>/500 karakter</span>
         </div>
         <button type="submit">Kirim komentar</button>
     </form>
 </section>
+<script src="/assets/app.js"></script>
+<script>wireCommentCounter('body', 'comment-count');</script>
 <?php require __DIR__ . '/templates/footer.php'; ?>
