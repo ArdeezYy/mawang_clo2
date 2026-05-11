@@ -1,0 +1,13 @@
+.DS_Store
+Thumbs.db
+tmp-cookies*.txt
+*.log
+
+# Local environment overrides
+.env
+.env.*
+
+# Local runtime/data artifacts
+db_data/
+node_modules/
+vendor/

@@ -1,0 +1,5 @@
+services:
+  web:
+    environment:
+      LOGIN_MODE: vulnerable
+      EXTERNAL_HTTPS_PORT: ${HTTPS_PORT:-8443}
