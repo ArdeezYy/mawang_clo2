@@ -2,6 +2,7 @@
 Thumbs.db
 tmp-cookies*.txt
 *.log
+~$*.pptx
 
 # Local environment overrides
 .env

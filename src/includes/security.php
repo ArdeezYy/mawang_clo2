@@ -37,7 +37,6 @@ function login_secure(PDO $pdo, string $username, string $password): ?array
         return $user;
     }
 
-    sleep(2);
     return null;
 }
 
@@ -50,7 +49,6 @@ function login_vulnerable(PDO $pdo, string $username, string $password): ?array
         return $user;
     }
 
-    sleep(2);
     return null;
 }
 

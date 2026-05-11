@@ -2,16 +2,13 @@
 
 ## 1. Pendahuluan
 
-Secure Comments adalah aplikasi papan komentar publik untuk demonstrasi pengamanan aplikasi web. Aplikasi dibuat dengan PHP, Apache, MySQL, dan Docker Compose. Pengguna publik dapat membaca komentar, pengguna terdaftar dapat menulis komentar, dan admin dapat melihat monitoring tabel `users` dan `comments`.
+Secure Comments adalah aplikasi papan komentar publik untuk demonstrasi pengamanan aplikasi web target 80 poin. Aplikasi dibuat dengan PHP, Apache, MySQL, dan Docker Compose. Pengguna publik dapat membaca komentar, pengguna terdaftar dapat menulis komentar, dan admin dapat melihat monitoring tabel `users` dan `comments`.
 
-Tujuan keamanan yang ditunjukkan:
+Scope penilaian yang ditunjukkan:
 
 - SSL/TLS pada web server.
 - Password disimpan memakai hash dan salt.
-- Proteksi SQL injection.
-- Pembatasan input untuk mengurangi risiko buffer overflow/abuse.
-- Mitigasi XSS scripting.
-- Mitigasi brute force sederhana.
+- Pembatasan input untuk mengurangi risiko buffer overflow/input berlebihan.
 
 ## 2. Arsitektur dan Instalasi
 
@@ -51,9 +48,9 @@ flowchart LR
     Browser["Browser pengguna"] -->|HTTP 8080| Redirect["Apache redirect"]
     Redirect -->|301| HTTPS["HTTPS 8443"]
     Browser -->|TLS| Web["Container web: Apache + PHP"]
-    Web -->|PDO prepared statement| DB["Container db: MySQL"]
+    Web --> DB["Container db: MySQL"]
     Web --> Session["Cookie session aman"]
-    Web --> CSRF["CSRF token"]
+    Web --> Limit["Validasi panjang input"]
 ```
 
 ## 4. Fitur Aplikasi
@@ -62,7 +59,7 @@ flowchart LR
 - `/signup.php` untuk pendaftaran user biasa.
 - `/login.php` untuk autentikasi.
 - `/comment.php` untuk menulis komentar setelah login.
-- `/admin.php` hanya untuk role admin.
+- `/admin.php` hanya untuk role admin dan menampilkan hash password.
 - `/logout.php` untuk keluar dari sesi.
 
 Akun demo:
@@ -91,24 +88,17 @@ password_hash($password, PASSWORD_DEFAULT)
 password_verify($password, $hash)
 ```
 
-`password_hash()` otomatis membuat salt unik untuk setiap password. Pada PHP 8.3, `PASSWORD_DEFAULT` memakai bcrypt kecuali default PHP berubah di versi mendatang.
+`password_hash()` otomatis membuat salt unik untuk setiap password. Pada PHP 8.3, `PASSWORD_DEFAULT` memakai bcrypt. Format hash admin contoh:
 
-### SQL Injection
-
-Mode aman memakai prepared statement PDO:
-
-```php
-$stmt = $pdo->prepare('SELECT id, username, password_hash, role FROM users WHERE username = ? LIMIT 1');
-$stmt->execute([$username]);
+```text
+$2y$10$t4W41OrdYPbD04t2DXUyYeaSU24Je8.AK1Rd5HJZWQahO.qnrmdIG
 ```
 
-Payload seperti `' OR '1'='1` tidak dapat mengubah struktur query pada mode secure.
+Keterangan:
 
-Untuk demonstrasi, mode raw query bisa dijalankan dengan:
-
-```powershell
-docker compose -f docker-compose.yml -f docker-compose.vulnerable.yml up --build -d
-```
+- `$2y$` menunjukkan bcrypt.
+- `10` adalah cost.
+- Salt bcrypt ada pada 22 karakter setelah prefix `$2y$10$`, misalnya `t4W41OrdYPbD04t2DXUyYe`.
 
 ### Buffer Overflow / Input Abuse
 
@@ -120,42 +110,7 @@ Aplikasi web PHP tidak memakai buffer manual seperti C, tetapi risiko input berl
 - Validasi komentar maksimal 500 karakter di sisi server dan client.
 - Pattern username hanya huruf, angka, dan underscore.
 
-### XSS Scripting
-
-Semua output dari database dirender dengan:
-
-```php
-htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
-```
-
-Payload `<script>alert(1)</script>` akan tampil sebagai teks mentah, bukan dieksekusi browser.
-
-### CSRF
-
-Semua form POST menyertakan token acak dari `random_bytes(32)`. Server memvalidasi token dengan `hash_equals()` sebelum memproses aksi.
-
-### Brute Force
-
-Login gagal diberi delay sekitar 2 detik. Ini bukan rate limiter penuh, tetapi cukup untuk menunjukkan mitigasi dasar brute force pada demo.
-
-### Session Hardening
-
-Konfigurasi session:
-
-- `HttpOnly`.
-- `Secure`.
-- `SameSite=Strict`.
-- `session.use_strict_mode=1`.
-- `session_regenerate_id(true)` setelah login berhasil.
-
-Security headers Apache:
-
-- `Strict-Transport-Security`
-- `Content-Security-Policy`
-- `X-Frame-Options`
-- `X-Content-Type-Options`
-- `Referrer-Policy`
-- `Permissions-Policy`
+Jika komentar lebih dari 500 karakter dikirim, server menolak input tersebut dan tidak menyimpannya ke database.
 
 ## 6. Skenario Uji
 
@@ -165,17 +120,14 @@ Security headers Apache:
 | 2 | Buka `/comment.php` tanpa login | Diarahkan ke login |
 | 3 | Signup user baru | User bisa dibuat dan login |
 | 4 | User biasa buka `/admin.php` | Ditolak dengan HTTP 403 |
-| 5 | Admin buka `/admin.php` | Tabel users/comments tampil |
-| 6 | Login payload `' OR '1'='1` | Gagal pada mode secure |
-| 7 | Komentar payload `<script>alert(1)</script>` | Tampil sebagai teks, tidak dieksekusi |
+| 5 | Admin buka `/admin.php` | Tabel users/comments dan hash password tampil |
+| 6 | Inspeksi sertifikat HTTPS | Public key RSA 2048-bit terlihat |
+| 7 | Cek hash admin di panel admin | Hash bcrypt bersalt tampil, bukan plaintext |
 | 8 | Komentar lebih dari 500 karakter | Ditolak |
-| 9 | POST tanpa CSRF token | Ditolak/redirect |
-| 10 | Login gagal | Ada delay sekitar 2 detik |
-| 11 | Buka `https://localhost:8443` | HTTPS aktif dengan self-signed certificate |
 
 ## 7. Kesimpulan
 
-Aplikasi memenuhi kebutuhan dasar pengamanan aplikasi web sesuai CLO 2: transport dienkripsi dengan HTTPS, password diamankan memakai hash dan salt, query database diamankan dengan prepared statement, input divalidasi, output di-escape untuk mencegah XSS, dan akses admin dibatasi berdasarkan role.
+Aplikasi memenuhi scope target 80 poin: transport dienkripsi dengan HTTPS, password diamankan memakai hash dan salt, serta input komentar dibatasi untuk mengurangi risiko buffer overflow/input berlebihan.
 
 ## 8. Catatan Penggunaan AI
 

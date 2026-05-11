@@ -1,13 +1,12 @@
 <?php
 $user = current_user($pdo);
-$mode = getenv('LOGIN_MODE') ?: 'secure';
 ?>
 <!doctype html>
 <html lang="id">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>CLO 2 Secure Comments</title>
+    <title>Secure Comments</title>
     <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
@@ -28,11 +27,6 @@ $mode = getenv('LOGIN_MODE') ?: 'secure';
             <?php endif; ?>
         </div>
     </nav>
-    <div class="status-strip">
-        <span>HTTPS aktif</span>
-        <span>Mode login: <?= e($mode) ?></span>
-        <span>Prepared statement: <?= $mode === 'secure' ? 'aktif' : 'dimatikan untuk demo' ?></span>
-    </div>
 </header>
 <main class="container">
 <?php foreach (flashes() as $item): ?>

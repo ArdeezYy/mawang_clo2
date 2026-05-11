@@ -15,7 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         : ($username === '' || strlen($username) > 128);
 
     if ($usernameInvalid || strlen($password) > 128) {
-        sleep(2);
         flash('error', 'Username atau password tidak valid.');
         redirect('/login.php');
     }
@@ -23,7 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $user = login_user($pdo, $username, $password);
     } catch (Throwable $e) {
-        sleep(2);
         $user = null;
     }
 
@@ -42,7 +40,7 @@ require __DIR__ . '/templates/header.php';
 ?>
 <section class="panel">
     <h1>Login</h1>
-    <p class="meta">Akun demo admin: <code>admin</code> / <code>Admin@240!</code>.</p>
+    <p class="meta">Masuk untuk menulis komentar dan mengelola akunmu.</p>
     <form class="stack" method="post" action="/login.php">
         <?= csrf_field() ?>
         <div class="field">

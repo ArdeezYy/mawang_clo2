@@ -3,7 +3,7 @@ require_once __DIR__ . '/includes/bootstrap.php';
 
 require_admin($pdo);
 
-$users = $pdo->query('SELECT id, username, role, created_at FROM users ORDER BY id ASC')->fetchAll();
+$users = $pdo->query('SELECT id, username, password_hash, role, created_at FROM users ORDER BY id ASC')->fetchAll();
 $comments = $pdo->query(
     'SELECT comments.id, comments.body, comments.created_at, users.username
      FROM comments
@@ -14,22 +14,26 @@ $comments = $pdo->query(
 require __DIR__ . '/templates/header.php';
 ?>
 <section class="hero">
-    <h1>Admin monitoring</h1>
-    <p>Panel ini hanya bisa diakses role admin dan memakai query database yang aman.</p>
+    <div>
+        <span class="eyebrow">Admin</span>
+        <h1>Monitoring aktivitas</h1>
+        <p>Lihat daftar pengguna dan komentar yang tersimpan di sistem.</p>
+    </div>
 </section>
 
 <div class="grid">
     <section class="table-wrap">
-        <h2>Users</h2>
+        <h2>Pengguna</h2>
         <table>
             <thead>
-                <tr><th>ID</th><th>Username</th><th>Role</th><th>Dibuat</th></tr>
+                <tr><th>ID</th><th>Username</th><th>Password tersimpan</th><th>Role</th><th>Dibuat</th></tr>
             </thead>
             <tbody>
                 <?php foreach ($users as $row): ?>
                     <tr>
                         <td><?= e((string) $row['id']) ?></td>
                         <td><?= e($row['username']) ?></td>
+                        <td><code><?= e($row['password_hash']) ?></code></td>
                         <td><?= e($row['role']) ?></td>
                         <td><?= e($row['created_at']) ?></td>
                     </tr>
@@ -39,7 +43,7 @@ require __DIR__ . '/templates/header.php';
     </section>
 
     <section class="table-wrap">
-        <h2>Comments</h2>
+        <h2>Komentar</h2>
         <table>
             <thead>
                 <tr><th>ID</th><th>User</th><th>Komentar</th><th>Dibuat</th></tr>
@@ -49,7 +53,7 @@ require __DIR__ . '/templates/header.php';
                     <tr>
                         <td><?= e((string) $row['id']) ?></td>
                         <td><?= e($row['username']) ?></td>
-                        <td><?= comment_body($row['body']) ?></td>
+                        <td><?= e($row['body']) ?></td>
                         <td><?= e($row['created_at']) ?></td>
                     </tr>
                 <?php endforeach; ?>

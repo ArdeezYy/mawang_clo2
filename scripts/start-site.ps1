@@ -1,7 +1,3 @@
-param(
-    [switch]$Vulnerable
-)
-
 $ErrorActionPreference = "Stop"
 
 Write-Host "Memastikan Docker Desktop berjalan..."
@@ -24,11 +20,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "Docker engine belum siap. Buka Docker Desktop lalu jalankan ulang script ini."
 }
 
-if ($Vulnerable) {
-    docker compose -f docker-compose.yml -f docker-compose.vulnerable.yml up --build -d
-} else {
-    docker compose up --build -d
-}
+docker compose up --build -d
 
 Write-Host "Aplikasi berjalan:"
 Write-Host "HTTPS: https://localhost:8443"

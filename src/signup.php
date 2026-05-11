@@ -40,14 +40,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 require __DIR__ . '/templates/header.php';
 ?>
 <section class="panel">
-    <h1>Sign up</h1>
-    <p class="meta">Akun baru otomatis mendapat role user dan tidak bisa membuka admin panel.</p>
+    <h1>Buat akun</h1>
+    <p class="meta">Gunakan username yang mudah dikenali dan password yang kuat.</p>
     <form class="stack" method="post" action="/signup.php">
         <?= csrf_field() ?>
         <div class="field">
             <label for="username">Username</label>
             <input id="username" name="username" maxlength="32" pattern="[A-Za-z0-9_]{3,32}" required autocomplete="username">
-            <span class="help">3-32 karakter: huruf, angka, dan underscore. Username admin/root diblokir.</span>
+            <span class="help">3-32 karakter: huruf, angka, dan underscore.</span>
         </div>
         <div class="field">
             <label for="password">Password</label>
@@ -61,7 +61,7 @@ require __DIR__ . '/templates/header.php';
             </ul>
         </div>
         <div class="button-row">
-            <button id="signup-submit" type="submit">Daftar</button>
+            <button id="signup-submit" type="submit">Buat akun</button>
             <button class="secondary" type="button" id="toggle-password">Tampilkan password</button>
         </div>
     </form>
