@@ -7,13 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim((string) ($_POST['username'] ?? ''));
     $password = (string) ($_POST['password'] ?? '');
 
-    $mode = getenv('LOGIN_MODE') ?: 'secure';
-    $usernameInvalid = $mode === 'secure'
-        ? !valid_username($username)
-        : ($username === '' || strlen($username) > 128);
-
-    if ($usernameInvalid || strlen($password) > 128) {
-        sleep(2);
+    if (!valid_username($username) || strlen($password) > 128) {
         flash('error', 'Username atau password tidak valid.');
         redirect('/login.php');
     }
@@ -21,7 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $user = login_user($pdo, $username, $password);
     } catch (Throwable $e) {
-        sleep(2);
         $user = null;
     }
 

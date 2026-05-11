@@ -1,6 +1,5 @@
 <?php
 $user = current_user($pdo);
-$mode = getenv('LOGIN_MODE') ?: 'secure';
 ?>
 <!doctype html>
 <html lang="id">
@@ -30,8 +29,8 @@ $mode = getenv('LOGIN_MODE') ?: 'secure';
     </nav>
     <div class="status-strip">
         <span>HTTPS aktif</span>
-        <span>Mode login: <?= e($mode) ?></span>
-        <span>Prepared statement: <?= $mode === 'secure' ? 'aktif' : 'dimatikan untuk demo' ?></span>
+        <span>Password hash + salt</span>
+        <span>Batas komentar 500 karakter</span>
     </div>
 </header>
 <main class="container">

@@ -14,18 +14,18 @@ require __DIR__ . '/templates/header.php';
 ?>
 <section class="hero">
     <h1>Papan komentar publik yang diamankan</h1>
-    <p>Demo CLO 2 untuk HTTPS, hash password dengan salt, proteksi SQL injection, mitigasi XSS, CSRF token, validasi input, dan session hardening.</p>
+    <p>Demo CLO 2 target 80 poin: HTTPS/TLS, hash password dengan salt, dan pembatasan input untuk mitigasi buffer overflow/input berlebih.</p>
 </section>
 
 <section class="grid">
     <div class="panel">
         <h2>Kontrol aktif</h2>
-        <p class="meta">Semua output komentar di-escape, semua form POST memakai token CSRF, dan login aman memakai prepared statement saat mode secure.</p>
+        <p class="meta">Transport web memakai HTTPS, password disimpan sebagai hash bcrypt bersalt, dan komentar dibatasi maksimal 500 karakter di server.</p>
         <a class="button" href="/comment.php">Tulis komentar</a>
     </div>
     <div class="panel">
-        <h2>Uji serangan</h2>
-        <p class="meta">Coba login dengan payload <code>' OR '1'='1</code> dan komentar <code>&lt;script&gt;alert(1)&lt;/script&gt;</code> untuk melihat mitigasi bekerja.</p>
+        <h2>Uji buffer overflow</h2>
+        <p class="meta">Kirim komentar lebih dari 500 karakter untuk melihat server menolak input yang terlalu panjang.</p>
     </div>
 </section>
 

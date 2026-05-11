@@ -33,7 +33,6 @@ services:
       DB_NAME: clo2_comments
       DB_USER: clo2_user
       DB_PASS: clo2_pass
-      LOGIN_MODE: secure
       EXTERNAL_HTTPS_PORT: ${HTTPS_PORT:-8443}
     ports:
       - "${HTTP_PORT:-8080}:80"

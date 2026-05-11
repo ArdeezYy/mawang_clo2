@@ -37,28 +37,10 @@ function login_secure(PDO $pdo, string $username, string $password): ?array
         return $user;
     }
 
-    sleep(2);
-    return null;
-}
-
-function login_vulnerable(PDO $pdo, string $username, string $password): ?array
-{
-    $sql = "SELECT id, username, password_hash, role FROM users WHERE username = '" . $username . "' LIMIT 1";
-    $user = $pdo->query($sql)->fetch();
-
-    if ($user) {
-        return $user;
-    }
-
-    sleep(2);
     return null;
 }
 
 function login_user(PDO $pdo, string $username, string $password): ?array
 {
-    if ((getenv('LOGIN_MODE') ?: 'secure') === 'vulnerable') {
-        return login_vulnerable($pdo, $username, $password);
-    }
-
     return login_secure($pdo, $username, $password);
 }

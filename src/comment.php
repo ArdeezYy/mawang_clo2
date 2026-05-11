@@ -25,7 +25,7 @@ require __DIR__ . '/templates/header.php';
 ?>
 <section class="panel">
     <h1>Tulis komentar</h1>
-    <p class="meta">Komentar dibatasi 500 karakter dan akan ditampilkan dengan escaping HTML untuk mencegah XSS.</p>
+    <p class="meta">Komentar dibatasi 500 karakter di sisi server untuk mencegah input berlebihan.</p>
     <form class="stack" method="post" action="/comment.php">
         <?= csrf_field() ?>
         <div class="field">
