@@ -23,12 +23,17 @@ function initialize_database(PDO $pdo): void
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
 
-    $stmt = $pdo->prepare('SELECT id FROM users WHERE username = ? LIMIT 1');
+    $stmt = $pdo->prepare('SELECT id, password_hash FROM users WHERE username = ? LIMIT 1');
     $stmt->execute(['admin']);
+    $admin = $stmt->fetch();
 
-    if (!$stmt->fetch()) {
+    if (!$admin) {
         $hash = password_hash('Admin@240!', PASSWORD_DEFAULT);
         $insert = $pdo->prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)');
         $insert->execute(['admin', $hash, 'admin']);
+    } elseif (!password_get_info((string) $admin['password_hash'])['algo']) {
+        $hash = password_hash('Admin@240!', PASSWORD_DEFAULT);
+        $update = $pdo->prepare('UPDATE users SET password_hash = ?, role = ? WHERE username = ?');
+        $update->execute([$hash, 'admin', 'admin']);
     }
 }
