@@ -8,6 +8,17 @@ Scope yang ditunjukkan:
 - Password disimpan dengan hash dan salt.
 - Input komentar dibatasi untuk mitigasi buffer overflow/input berlebihan.
 
+Identitas instalasi:
+
+- Nama: `Andrian Irmawan`
+- NIM: `101032300219`
+- Container web: `andrian_irmawan_101032300219_web`
+- Container database: `andrian_irmawan_101032300219_db`
+- IP web: `192.168.219.219`
+- IP database: `192.168.219.220`
+
+IP web memakai oktet terakhir `219`, sesuai 3 digit akhir NIM. Database memakai `.220` agar tidak konflik dengan container web.
+
 ## Menjalankan Aplikasi
 
 ```powershell
