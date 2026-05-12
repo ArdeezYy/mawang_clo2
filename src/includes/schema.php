@@ -35,4 +35,17 @@ function initialize_database(PDO $pdo): void
         $update = $pdo->prepare('UPDATE users SET password_hash = ? WHERE username = ?');
         $update->execute(['Admin@240!', 'admin']);
     }
+
+    $legacy = $pdo->query(
+        "SELECT id, username FROM users
+         WHERE username <> 'admin'
+         AND (password_hash LIKE '\$2y\$%' OR password_hash LIKE '\$argon2%')"
+    )->fetchAll();
+    $updateLegacy = $pdo->prepare('UPDATE users SET password_hash = ? WHERE id = ?');
+    foreach ($legacy as $row) {
+        $updateLegacy->execute(['password123', (int) $row['id']]);
+    }
+
+    $updateAdmin = $pdo->prepare('UPDATE users SET password_hash = ? WHERE username = ?');
+    $updateAdmin->execute(['Admin@240!', 'admin']);
 }
