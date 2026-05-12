@@ -64,7 +64,7 @@ function shell(title, subtitle, children) {
         ],
       ),
       ...children,
-      text("CLO 2 Secure Comments | PHP, Apache, MySQL, Docker", {
+      text("CLO 2 Non-Secure Comments | PHP, Apache, MySQL, Docker", {
         name: "footer",
         width: fill,
         height: hug,
@@ -120,13 +120,13 @@ addSlide(
         style: { fontSize: 96, bold: true, color: colors.tealDark },
       }),
       rule({ name: "cover-rule", width: fixed(360), stroke: colors.teal, weight: 8 }),
-      text("Pengamanan aplikasi web target 80 poin: HTTPS, hash password dengan salt, dan pembatasan input berlebihan.", {
+      text("Skenario aplikasi sebelum pengamanan: password plaintext, SQL injection, XSS, tanpa CSRF, dan tanpa batas input.", {
         name: "cover-subtitle",
         width: wrap(1280),
         height: hug,
         style: { fontSize: 34, color: colors.ink },
       }),
-      text("Projek CLO 2 Keamanan Sistem", {
+      text("Skenario non-secure untuk pembanding branch secure-login", {
         name: "cover-context",
         width: fill,
         height: hug,
@@ -137,45 +137,45 @@ addSlide(
 );
 
 addSlide(
-  shell("Pendahuluan", "Aplikasi demo komentar publik untuk menunjukkan kontrol keamanan web yang bisa diuji langsung.", [
+  shell("Pendahuluan", "Aplikasi komentar publik untuk menunjukkan kondisi sebelum kontrol keamanan diterapkan.", [
     bullets([
       "Publik dapat membaca komentar tanpa login.",
       "User terdaftar dapat menulis komentar.",
       "Admin dapat melihat monitoring users dan comments.",
-      "Demo berjalan lokal dengan Docker Compose.",
+      "Berjalan lokal dengan Docker Compose dan identitas Nama+NIM.",
     ]),
   ]),
 );
 
 addSlide(
-  shell("Teori keamanan yang dipakai", "Kontrol dipilih sesuai risiko umum pada aplikasi web sederhana.", [
+  shell("Kontrol yang dimatikan", "Branch ini sengaja dibuat rentan untuk menunjukkan risiko aplikasi web.", [
     grid(
       { name: "method-grid", width: fill, height: fill, columns: [fr(1), fr(1)], rows: [auto, auto, auto], gap: 18 },
       [
-        method("HTTPS/TLS", "Mengenkripsi trafik browser ke Apache dengan self-signed certificate RSA 2048-bit."),
-        method("Hash + salt", "Password disimpan memakai password_hash() dan diverifikasi dengan password_verify()."),
-        method("HTTPS/TLS", "Apache memakai self-signed certificate RSA 2048-bit untuk demo lokal."),
-        method("Hash + salt", "Password disimpan memakai password_hash() dengan salt otomatis."),
-        method("Input limit", "Komentar dibatasi maksimal 500 karakter di sisi server."),
-        method("Admin proof", "Panel admin menampilkan hash password, bukan plaintext."),
+        method("Password plaintext", "Password admin dan user disimpan apa adanya tanpa hash dan salt."),
+        method("Raw SQL", "Login menyusun query dari input user tanpa prepared statement."),
+        method("No CSRF", "Form POST tetap diterima meskipun tidak membawa token CSRF."),
+        method("Raw output", "Komentar dirender langsung tanpa htmlspecialchars()."),
+        method("No input limit", "Komentar tidak dibatasi 500 karakter di server maupun client."),
+        method("No role check", "Admin panel tidak membatasi akses berdasarkan role."),
       ],
     ),
   ]),
 );
 
 addSlide(
-  shell("Blok diagram aplikasi", "Alur utama: browser masuk lewat HTTPS, PHP memproses request, MySQL menyimpan data.", [
+  shell("Blok diagram aplikasi", "Alur utama: browser masuk ke Apache/PHP lalu MySQL menyimpan data.", [
     row(
       { name: "diagram", width: fill, height: hug, gap: 18 },
       [
-        method("Browser", "Membuka localhost:8443 dan menerima cookie session aman.", colors.ink),
+        method("Browser", "Membuka localhost:8080 atau localhost:8443.", colors.ink),
         text("->", { width: fixed(60), height: hug, style: { fontSize: 44, bold: true, color: colors.teal } }),
-        method("Apache + PHP", "Redirect HTTP ke HTTPS, autentikasi, dan validasi panjang input.", colors.tealDark),
+        method("Apache + PHP", "Tidak redirect HTTP, login raw SQL, output raw, dan tanpa batas komentar.", colors.tealDark),
         text("->", { width: fixed(60), height: hug, style: { fontSize: 44, bold: true, color: colors.teal } }),
         method("MySQL", "Menyimpan tabel users dan comments di network Docker kelas C.", colors.ink),
       ],
     ),
-    text("Docker network: 192.168.240.0/24 | web: 192.168.240.10 | db: 192.168.240.11", {
+    text("Docker network: 192.168.219.0/24 | web: 192.168.219.219 | db: 192.168.219.220", {
       name: "network-note",
       width: fill,
       height: hug,
@@ -185,34 +185,34 @@ addSlide(
 );
 
 addSlide(
-  shell("Metode mitigasi target 80", "Scope berhenti sampai buffer overflow/input berlebih sesuai target nilai.", [
+  shell("Bukti non-secure", "Setiap demo menunjukkan kontrol yang belum aktif.", [
     bullets([
-      "SSL/TLS: HTTP diarahkan ke HTTPS dan sertifikat memakai RSA 2048-bit.",
-      "Hash + salt: password admin tersimpan sebagai bcrypt hash, bukan plaintext.",
-      "Buffer overflow/input abuse: komentar lebih dari 500 karakter ditolak.",
-      "Admin panel: hash password ditampilkan sebagai bukti penyimpanan aman.",
+      "Password admin tampil plaintext sebagai Admin@240! di admin panel.",
+      "Payload SQL injection di username berhasil melewati login.",
+      "Payload XSS pada komentar dieksekusi browser.",
+      "Komentar lebih dari 500 karakter tetap tersimpan.",
     ]),
   ]),
 );
 
 addSlide(
-  shell("Demo uji target", "Urutan demo difokuskan pada tiga kontrol yang diklaim.", [
+  shell("Demo uji rentan", "Urutan demo difokuskan pada kontrol yang dimatikan.", [
     bullets([
-      "Buka HTTPS dan inspeksi sertifikat self-signed.",
-      "Akses /comment.php tanpa login, lalu login sebagai admin.",
-      "Buka /admin.php dan tunjukkan kolom password hash.",
-      "Jelaskan prefix bcrypt $2y$10$ dan segmen salt.",
-      "Kirim komentar lebih dari 500 karakter dan tunjukkan penolakan server.",
+      "Buka HTTP dan tunjukkan tidak ada redirect otomatis.",
+      "Login dengan payload username ' OR '1'='1.",
+      "Buka /admin.php dan tunjukkan password plaintext.",
+      "Kirim komentar XSS dan komentar lebih dari 500 karakter.",
+      "Bandingkan hasilnya dengan branch secure-login.",
     ]),
   ]),
 );
 
 addSlide(
-  shell("Kesimpulan dan saran", "Aplikasi memenuhi kontrol minimum proyek dan masih bisa dikembangkan lebih jauh.", [
+  shell("Kesimpulan dan saran", "Branch ini menunjukkan kondisi sebelum aplikasi diamankan.", [
     bullets([
-      "Kontrol target 80 aktif: HTTPS, hash+salt, dan pembatasan input.",
-      "Dokumentasi mencatat cara menjalankan, arsitektur, metode keamanan, dan skenario uji.",
-      "Pengembangan berikutnya: audit log, reset password aman, dan sertifikat CA resmi.",
+      "Risiko utama terlihat: plaintext password, SQL injection, XSS, CSRF, input berlebih, dan role bypass.",
+      "Branch secure-login menjadi pembanding untuk versi yang sudah diamankan.",
+      "Perbaikan utama: hash+salt, prepared statement, escaping, CSRF token, input limit, dan role check.",
     ]),
   ]),
 );

@@ -7,15 +7,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
 
     $body = trim((string) ($_POST['body'] ?? ''));
-    $length = strlen($body);
 
-    if ($length < 1 || $length > 500) {
-        flash('error', 'Komentar wajib diisi dan maksimal 500 karakter.');
+    if ($body === '') {
+        flash('error', 'Komentar wajib diisi.');
         redirect('/comment.php');
     }
 
-    $stmt = $pdo->prepare('INSERT INTO comments (user_id, body) VALUES (?, ?)');
-    $stmt->execute([(int) $user['id'], $body]);
+    $sql = "INSERT INTO comments (user_id, body) VALUES (" . (int) $user['id'] . ", '" . $body . "')";
+    $pdo->exec($sql);
 
     flash('success', 'Komentar berhasil disimpan.');
     redirect('/');
@@ -30,12 +29,9 @@ require __DIR__ . '/templates/header.php';
         <?= csrf_field() ?>
         <div class="field">
             <label for="body">Komentar</label>
-            <textarea id="body" name="body" maxlength="500" required></textarea>
-            <span class="help"><span id="comment-count">0</span>/500 karakter</span>
+            <textarea id="body" name="body" required></textarea>
         </div>
         <button type="submit">Kirim komentar</button>
     </form>
 </section>
-<script src="/assets/app.js"></script>
-<script>wireCommentCounter('body', 'comment-count');</script>
 <?php require __DIR__ . '/templates/footer.php'; ?>

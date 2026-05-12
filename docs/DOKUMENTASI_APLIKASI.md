@@ -1,20 +1,24 @@
-# Dokumentasi Aplikasi CLO 2 Secure Comments
+# Dokumentasi Aplikasi CLO 2 Non-Secure Comments
 
 ## 1. Pendahuluan
 
-Secure Comments adalah aplikasi papan komentar publik untuk demonstrasi pengamanan aplikasi web target 80 poin. Aplikasi dibuat dengan PHP, Apache, MySQL, dan Docker Compose. Pengguna publik dapat membaca komentar, pengguna terdaftar dapat menulis komentar, dan admin dapat melihat monitoring tabel `users` dan `comments`.
+Secure Comments pada branch ini adalah skenario non-secure untuk menunjukkan kondisi aplikasi sebelum pengamanan diterapkan. Aplikasi dibuat dengan PHP, Apache, MySQL, dan Docker Compose. Pengguna publik dapat membaca komentar, pengguna terdaftar dapat menulis komentar, dan admin panel dipakai untuk melihat data yang tersimpan.
 
-Scope penilaian yang ditunjukkan:
+Kontrol keamanan yang sengaja dimatikan:
 
-- SSL/TLS pada web server.
-- Password disimpan memakai hash dan salt.
-- Pembatasan input untuk mengurangi risiko buffer overflow/input berlebihan.
+- Password disimpan plaintext tanpa hash dan salt.
+- Login memakai query SQL mentah.
+- Token CSRF tidak divalidasi.
+- Output komentar tidak di-escape.
+- Komentar tidak dibatasi 500 karakter.
+- Cookie session tidak memakai konfigurasi hardening.
+- HTTP tidak diarahkan otomatis ke HTTPS.
 
 ## 2. Arsitektur dan Instalasi
 
 Komponen utama:
 
-- `web`: container PHP 8.3 + Apache dengan SSL aktif.
+- `web`: container PHP 8.3 + Apache.
 - `db`: container MySQL 8.4.
 - Nama: `Andrian Irmawan`.
 - NIM: `101032300219`.
@@ -41,20 +45,20 @@ Jika Docker Desktop belum aktif:
 URL demo:
 
 - HTTPS: `https://localhost:8443`
-- HTTP redirect: `http://localhost:8080`
+- HTTP: `http://localhost:8080`
 
-Browser akan menampilkan peringatan karena sertifikat dibuat sendiri untuk demo lokal.
+Browser akan menampilkan peringatan jika membuka HTTPS karena sertifikat dibuat sendiri.
 
 ## 3. Blok Diagram
 
 ```mermaid
 flowchart LR
-    Browser["Browser pengguna"] -->|HTTP 8080| Redirect["Apache redirect"]
-    Redirect -->|301| HTTPS["HTTPS 8443"]
-    Browser -->|TLS| Web["Container web: Apache + PHP"]
+    Browser["Browser pengguna"] -->|HTTP 8080| Web["Container web: Apache + PHP 192.168.219.219"]
+    Browser -->|HTTPS 8443| Web
     Web --> DB["Container db: MySQL 192.168.219.220"]
-    Web --> Session["Cookie session aman"]
-    Web --> Limit["Validasi panjang input"]
+    Web --> Plain["Password plaintext"]
+    Web --> RawSQL["Query SQL mentah"]
+    Web --> RawHTML["Output komentar raw"]
 ```
 
 ## 4. Fitur Aplikasi
@@ -63,7 +67,7 @@ flowchart LR
 - `/signup.php` untuk pendaftaran user biasa.
 - `/login.php` untuk autentikasi.
 - `/comment.php` untuk menulis komentar setelah login.
-- `/admin.php` hanya untuk role admin dan menampilkan hash password.
+- `/admin.php` menampilkan data pengguna, komentar, dan password plaintext.
 - `/logout.php` untuk keluar dari sesi.
 
 Akun demo:
@@ -71,67 +75,50 @@ Akun demo:
 - Username: `admin`
 - Password: `Admin@240!`
 
-## 5. Metode Pengamanan
+## 5. Kondisi Non-Secure
 
-### SSL/TLS
+### Password Plaintext
 
-Apache dikonfigurasi dengan SSL pada port 443 container, dipetakan ke `https://localhost:8443`. Sertifikat self-signed dibuat saat build image dengan OpenSSL:
+Password admin dan user disimpan langsung di kolom `password_hash`, tetapi isinya plaintext. Admin panel menampilkan nilai tersebut agar mudah dibuktikan.
 
-- Algoritma kunci publik: RSA.
-- Panjang kunci: 2048 bit.
-- Masa berlaku: 365 hari.
-
-HTTP pada `localhost:8080` diarahkan ke HTTPS.
-
-### Hash dan Salt Password
-
-Password tidak disimpan dalam plaintext. PHP memakai:
-
-```php
-password_hash($password, PASSWORD_DEFAULT)
-password_verify($password, $hash)
-```
-
-`password_hash()` otomatis membuat salt unik untuk setiap password. Pada PHP 8.3, `PASSWORD_DEFAULT` memakai bcrypt. Format hash admin contoh:
+Contoh nilai admin:
 
 ```text
-$2y$10$t4W41OrdYPbD04t2DXUyYeaSU24Je8.AK1Rd5HJZWQahO.qnrmdIG
+Admin@240!
 ```
 
-Keterangan:
+### Login Raw SQL
 
-- `$2y$` menunjukkan bcrypt.
-- `10` adalah cost.
-- Salt bcrypt ada pada 22 karakter setelah prefix `$2y$10$`, misalnya `t4W41OrdYPbD04t2DXUyYe`.
+Login membaca input username/password dan menyusun SQL secara langsung tanpa prepared statement. Payload seperti berikut dapat melewati autentikasi:
 
-### Buffer Overflow / Input Abuse
+```text
+' OR '1'='1
+```
 
-Aplikasi web PHP tidak memakai buffer manual seperti C, tetapi risiko input berlebihan dikurangi dengan:
+### XSS dan CSRF
 
-- `LimitRequestBody` pada Apache.
-- Validasi panjang username 3-32 karakter.
-- Validasi password maksimal 128 karakter.
-- Validasi komentar maksimal 500 karakter di sisi server dan client.
-- Pattern username hanya huruf, angka, dan underscore.
+Output komentar dirender apa adanya tanpa `htmlspecialchars()`. Token CSRF juga tidak dibuat dan tidak diperiksa, sehingga POST tanpa token tetap diterima.
 
-Jika komentar lebih dari 500 karakter dikirim, server menolak input tersebut dan tidak menyimpannya ke database.
+### Input Berlebihan
+
+Komentar memakai tipe `TEXT` dan tidak dibatasi 500 karakter di server maupun client. Apache juga tidak memakai `LimitRequestBody` khusus pada branch ini.
 
 ## 6. Skenario Uji
 
 | No | Skenario | Hasil yang diharapkan |
 | --- | --- | --- |
 | 1 | Buka `/` tanpa login | Komentar publik tampil |
-| 2 | Buka `/comment.php` tanpa login | Diarahkan ke login |
+| 2 | Login payload `' OR '1'='1` | Masuk sebagai admin |
 | 3 | Signup user baru | User bisa dibuat dan login |
-| 4 | User biasa buka `/admin.php` | Ditolak dengan HTTP 403 |
-| 5 | Admin buka `/admin.php` | Tabel users/comments dan hash password tampil |
-| 6 | Inspeksi sertifikat HTTPS | Public key RSA 2048-bit terlihat |
-| 7 | Cek hash admin di panel admin | Hash bcrypt bersalt tampil, bukan plaintext |
-| 8 | Komentar lebih dari 500 karakter | Ditolak |
+| 4 | User biasa buka `/admin.php` | Panel tetap terbuka |
+| 5 | Admin buka `/admin.php` | Password plaintext tampil |
+| 6 | Komentar payload `<script>alert(1)</script>` | Script dieksekusi browser |
+| 7 | Komentar lebih dari 500 karakter | Tetap tersimpan |
+| 8 | POST tanpa CSRF token | Tetap diterima |
 
 ## 7. Kesimpulan
 
-Aplikasi memenuhi scope target 80 poin: transport dienkripsi dengan HTTPS, password diamankan memakai hash dan salt, serta input komentar dibatasi untuk mengurangi risiko buffer overflow/input berlebihan.
+Branch ini menunjukkan kondisi non-secure: password belum di-hash, query login rentan SQL injection, komentar raw rentan XSS, CSRF tidak aktif, pembatasan input tidak aktif, dan admin panel tidak dibatasi role. Bandingkan dengan branch `secure-login` untuk versi yang sudah diamankan.
 
 ## 8. Catatan Penggunaan AI
 

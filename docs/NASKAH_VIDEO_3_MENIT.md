@@ -2,34 +2,34 @@
 
 ## 0:00 - 0:20 Pendahuluan
 
-Assalamualaikum, saya mempresentasikan proyek CLO 2 Keamanan Sistem, yaitu aplikasi Secure Comments. Aplikasi ini adalah papan komentar publik berbasis PHP, Apache, MySQL, dan Docker. Target scope proyek ini adalah 80 poin, yaitu HTTPS, hash dan salt password, serta mitigasi input berlebihan atau buffer overflow.
+Assalamualaikum, saya mempresentasikan skenario non-secure dari aplikasi Secure Comments. Aplikasi ini adalah papan komentar publik berbasis PHP, Apache, MySQL, dan Docker. Tujuan skenario ini adalah menunjukkan kondisi aplikasi sebelum kontrol keamanan diterapkan.
 
-## 0:20 - 0:45 Teori Singkat
+## 0:20 - 0:45 Kondisi Rentan
 
-Masalah utama yang ditunjukkan adalah koneksi tidak terenkripsi, password yang tidak aman jika disimpan plaintext, dan input terlalu panjang. Solusi yang dipakai adalah HTTPS/TLS, password hash dengan salt, password policy, dan pembatasan panjang input di sisi server.
+Pada branch ini, beberapa keamanan sengaja dimatikan. Password disimpan plaintext tanpa hash dan salt, login memakai query SQL mentah, komentar tidak dibatasi 500 karakter, output komentar tidak di-escape, token CSRF tidak diperiksa, dan admin panel tidak membatasi role.
 
 ## 0:45 - 1:05 Blok Diagram
 
-Aplikasi berjalan di Docker Compose. Browser mengakses Apache/PHP melalui HTTPS port 8443. Apache juga menerima HTTP port 8080 lalu redirect ke HTTPS. PHP terhubung ke MySQL untuk menyimpan users dan comments. Session memakai cookie aman, dan input komentar dibatasi maksimal 500 karakter.
+Aplikasi berjalan di Docker Compose dengan identitas Andrian Irmawan, NIM 101032300219. Container web bernama `andrian_irmawan_101032300219_web` dan memakai IP `192.168.219.219`. Container database bernama `andrian_irmawan_101032300219_db` dan memakai IP `192.168.219.220`.
 
 ## 1:05 - 2:25 Demo Aplikasi dan Uji
 
-Pertama, saya buka `https://localhost:8443`. Browser memberi peringatan karena sertifikat self-signed, lalu saya lanjutkan untuk demo lokal. Di halaman utama, komentar bisa dibaca tanpa login.
+Pertama, saya buka `http://localhost:8080`. HTTP langsung membuka aplikasi dan tidak diarahkan otomatis ke HTTPS.
 
-Kedua, saya inspeksi sertifikat pada browser. Sertifikat memakai public key RSA 2048-bit. HTTP port 8080 juga otomatis diarahkan ke HTTPS.
+Kedua, saya mencoba login memakai payload username `' OR '1'='1` dengan password bebas. Login berhasil masuk sebagai admin karena query SQL disusun langsung dari input.
 
-Ketiga, saya login memakai akun admin `admin` dengan password `Admin@240!`, lalu membuka `/admin.php`. Admin panel menampilkan monitoring tabel users dan comments.
+Ketiga, saya buka `/admin.php`. Panel tetap terbuka dan pada tabel users terlihat password admin tersimpan plaintext sebagai `Admin@240!`.
 
-Keempat, pada tabel users terlihat kolom password hash. Password plaintext tidak disimpan. Hash memakai format bcrypt, diawali `$2y$10$`, dan salt bcrypt berada pada 22 karakter setelah prefix tersebut.
+Keempat, saya mengirim komentar berisi `<script>alert(1)</script>`. Script dieksekusi browser karena output komentar tidak di-escape.
 
-Kelima, saya mencoba menulis komentar normal. Komentar tersimpan dan tampil di halaman utama.
+Kelima, saya mengirim komentar lebih dari 500 karakter. Komentar tetap tersimpan karena tidak ada pembatasan panjang input di server maupun client.
 
-Keenam, saya mencoba komentar lebih dari 500 karakter. Server menolak input tersebut, sehingga input terlalu panjang tidak masuk ke database. Ini menunjukkan mitigasi input abuse atau buffer overflow pada aplikasi web.
+Keenam, saya kirim form POST tanpa token CSRF. Aksi tetap diterima karena pengecekan CSRF dimatikan.
 
 ## 2:25 - 2:50 Kesimpulan
 
-Kesimpulannya, aplikasi ini berhasil menerapkan tiga kontrol sesuai target 80 poin: HTTPS/TLS pada web server, password hash dengan salt, dan pembatasan input untuk mencegah input berlebihan.
+Kesimpulannya, skenario non-secure ini menunjukkan risiko utama sebelum pengamanan: password plaintext, SQL injection, XSS, tidak ada CSRF protection, tidak ada batas input, dan admin panel tanpa pembatasan role.
 
 ## 2:50 - 3:00 Saran
 
-Untuk pengembangan selanjutnya, aplikasi bisa ditambah audit log, reset password aman, dan sertifikat CA resmi.
+Solusinya ada pada branch `secure-login`, yaitu mengaktifkan hash dan salt password, prepared statement, output escaping, CSRF token, pembatasan input, session hardening, dan role check admin.

@@ -17,18 +17,22 @@ function initialize_database(PDO $pdo): void
         "CREATE TABLE IF NOT EXISTS comments (
             id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
             user_id INT UNSIGNED NOT NULL,
-            body VARCHAR(500) NOT NULL,
+            body TEXT NOT NULL,
             created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             CONSTRAINT fk_comments_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
 
+    $pdo->exec('ALTER TABLE comments MODIFY body TEXT NOT NULL');
+
     $stmt = $pdo->prepare('SELECT id FROM users WHERE username = ? LIMIT 1');
     $stmt->execute(['admin']);
 
     if (!$stmt->fetch()) {
-        $hash = password_hash('Admin@240!', PASSWORD_DEFAULT);
         $insert = $pdo->prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)');
-        $insert->execute(['admin', $hash, 'admin']);
+        $insert->execute(['admin', 'Admin@240!', 'admin']);
+    } else {
+        $update = $pdo->prepare('UPDATE users SET password_hash = ? WHERE username = ?');
+        $update->execute(['Admin@240!', 'admin']);
     }
 }

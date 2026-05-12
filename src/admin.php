@@ -26,7 +26,7 @@ require __DIR__ . '/templates/header.php';
         <h2>Pengguna</h2>
         <table>
             <thead>
-                <tr><th>ID</th><th>Username</th><th>Password tersimpan</th><th>Role</th><th>Dibuat</th></tr>
+                <tr><th>ID</th><th>Username</th><th>Password plaintext</th><th>Role</th><th>Dibuat</th></tr>
             </thead>
             <tbody>
                 <?php foreach ($users as $row): ?>

@@ -31,10 +31,6 @@ require __DIR__ . '/templates/header.php';
         <strong><?= e((string) count($comments)) ?></strong>
         <span>Komentar terbaru</span>
     </div>
-    <div>
-        <strong>500</strong>
-        <span>Karakter maksimal</span>
-    </div>
 </section>
 
 <section class="stack comments-section">

@@ -1,20 +1,13 @@
 <?php
 require_once __DIR__ . '/includes/bootstrap.php';
 
-$mode = getenv('LOGIN_MODE') ?: 'secure';
-$usernamePattern = $mode === 'secure' ? ' pattern="[A-Za-z0-9_]{3,32}"' : '';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     require_csrf();
 
     $username = trim((string) ($_POST['username'] ?? ''));
     $password = (string) ($_POST['password'] ?? '');
 
-    $usernameInvalid = $mode === 'secure'
-        ? !valid_username($username)
-        : ($username === '' || strlen($username) > 128);
-
-    if ($usernameInvalid || strlen($password) > 128) {
+    if ($username === '') {
         flash('error', 'Username atau password tidak valid.');
         redirect('/login.php');
     }
@@ -45,11 +38,11 @@ require __DIR__ . '/templates/header.php';
         <?= csrf_field() ?>
         <div class="field">
             <label for="username">Username</label>
-            <input id="username" name="username" maxlength="128"<?= $usernamePattern ?> required autocomplete="username">
+            <input id="username" name="username" required autocomplete="username">
         </div>
         <div class="field">
             <label for="password">Password</label>
-            <input id="password" name="password" type="password" maxlength="128" required autocomplete="current-password">
+            <input id="password" name="password" type="password" autocomplete="current-password">
         </div>
         <div class="button-row">
             <button type="submit">Login</button>

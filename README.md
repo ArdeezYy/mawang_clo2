@@ -1,12 +1,16 @@
-# CLO 2 Secure Comments
+# CLO 2 Non-Secure Comments
 
-Aplikasi papan komentar publik berbasis PHP, MySQL, Apache, dan Docker untuk demo pengamanan aplikasi web target 80 poin.
+Aplikasi papan komentar publik berbasis PHP, MySQL, Apache, dan Docker untuk skenario non-secure.
 
-Scope yang ditunjukkan:
+Kontrol keamanan yang sengaja dimatikan:
 
-- Konfigurasi HTTPS/SSL pada web server.
-- Password disimpan dengan hash dan salt.
-- Input komentar dibatasi untuk mitigasi buffer overflow/input berlebihan.
+- Password disimpan plaintext tanpa hash dan salt.
+- Login memakai query SQL mentah.
+- Token CSRF tidak divalidasi.
+- Output komentar tidak di-escape.
+- Komentar tidak dibatasi 500 karakter.
+- Cookie session tidak memakai konfigurasi hardening.
+- HTTP tidak diarahkan otomatis ke HTTPS.
 
 Identitas instalasi:
 
@@ -31,10 +35,10 @@ Jika muncul error `dockerDesktopLinuxEngine` atau Docker engine belum hidup, jal
 .\scripts\start-site.ps1
 ```
 
-URL demo:
+URL lokal:
 
 - HTTPS: https://localhost:8443
-- HTTP redirect: http://localhost:8080
+- HTTP: http://localhost:8080
 
 Jika port 8080/8443 sedang dipakai, jalankan dengan port lain:
 
@@ -42,37 +46,31 @@ Jika port 8080/8443 sedang dipakai, jalankan dengan port lain:
 $env:HTTP_PORT=8081; $env:HTTPS_PORT=8444; docker compose up --build -d
 ```
 
-Browser akan menampilkan peringatan karena sertifikat SSL dibuat sendiri. Lanjutkan ke halaman untuk kebutuhan demo lokal.
+Browser akan menampilkan peringatan jika membuka HTTPS karena sertifikat SSL dibuat sendiri.
 
 ## Akun Demo
 
 - Username: `admin`
 - Password: `Admin@240!`
 - User biasa dapat dibuat lewat `/signup.php`.
-- Username `admin` dan `root` tidak bisa didaftarkan dari sign up publik.
 
-## Kontrol Keamanan
+## Kondisi Non-Secure
 
-- HTTPS melalui Apache SSL dan self-signed certificate.
-- Cookie session memakai `HttpOnly`, `Secure`, `SameSite=Strict`, dan strict session mode.
-- Password user disimpan dengan `password_hash()` yang otomatis memakai salt.
-- Signup menerapkan password policy minimal 8 karakter dengan huruf besar, huruf kecil, angka, dan simbol.
-- Halaman login dan signup memiliki tombol tampil/sembunyikan password.
-- Halaman signup menampilkan checklist password secara langsung dan tombol daftar hanya aktif jika password memenuhi syarat.
-- Input komentar dibatasi maksimal 500 karakter di sisi server.
-- Apache memakai `LimitRequestBody` untuk membatasi ukuran request.
-- Admin panel hanya bisa diakses akun dengan role admin.
-- Admin panel menampilkan hash password sebagai bukti bahwa plaintext password tidak disimpan.
+- Admin panel menampilkan password plaintext.
+- Payload SQL injection di login dapat melewati autentikasi.
+- Payload XSS di komentar dieksekusi browser.
+- Komentar panjang tersimpan karena tidak ada batas 500 karakter.
+- Form POST tetap diterima walaupun tanpa token CSRF.
+- Admin panel tidak lagi membatasi role admin.
 
 ## Skenario Uji
 
 - Buka halaman utama tanpa login untuk membaca komentar.
-- Buka `/comment.php` tanpa login; aplikasi harus meminta login.
-- Buat akun baru lewat `/signup.php`; akun baru bisa menulis komentar tetapi tidak bisa membuka admin panel.
-- Login sebagai `admin`, lalu buka `/admin.php` untuk melihat monitoring tabel `users`, `comments`, dan hash password.
-- Inspeksi sertifikat browser pada `https://localhost:8443`; algoritma public key adalah RSA 2048-bit.
-- Cek hash password admin di admin panel; format bcrypt diawali `$2y$10$` dan salt ada pada 22 karakter setelah prefix tersebut.
-- Kirim komentar lebih dari 500 karakter; aplikasi harus menolak.
+- Login memakai payload username `' OR '1'='1` dengan password bebas; aplikasi masuk sebagai admin.
+- Login sebagai `admin`, lalu buka `/admin.php` untuk melihat password plaintext.
+- Kirim komentar `<script>alert(1)</script>`; browser mengeksekusi script.
+- Kirim komentar lebih dari 500 karakter; aplikasi tetap menyimpan komentar.
+- Buka `/admin.php` dari akun biasa; panel tetap terbuka karena role check dimatikan.
 
 ## Deliverable Pendukung
 
