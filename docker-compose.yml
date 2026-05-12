@@ -1,7 +1,7 @@
 services:
   db:
     image: mysql:8.4
-    container_name: clo2-secure-comments-db
+    container_name: andrian_irmawan_101032300219_db
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root_clo2_demo
@@ -17,13 +17,13 @@ services:
       retries: 8
     networks:
       clo2_net:
-        ipv4_address: 192.168.240.11
+        ipv4_address: 192.168.219.220
 
   web:
     build:
       context: .
       dockerfile: docker/php-apache/Dockerfile
-    container_name: clo2-secure-comments-web
+    container_name: andrian_irmawan_101032300219_web
     restart: unless-stopped
     depends_on:
       db:
@@ -40,7 +40,7 @@ services:
       - "${HTTPS_PORT:-8443}:443"
     networks:
       clo2_net:
-        ipv4_address: 192.168.240.10
+        ipv4_address: 192.168.219.219
 
 volumes:
   db_data:
@@ -50,4 +50,4 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 192.168.240.0/24
+        - subnet: 192.168.219.0/24

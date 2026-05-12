@@ -16,11 +16,15 @@ Komponen utama:
 
 - `web`: container PHP 8.3 + Apache dengan SSL aktif.
 - `db`: container MySQL 8.4.
-- Network Docker: `192.168.240.0/24`.
-- IP container web: `192.168.240.10`.
-- IP container database: `192.168.240.11`.
+- Nama: `Andrian Irmawan`.
+- NIM: `101032300219`.
+- Container web: `andrian_irmawan_101032300219_web`.
+- Container database: `andrian_irmawan_101032300219_db`.
+- Network Docker: `192.168.219.0/24`.
+- IP container web: `192.168.219.219`.
+- IP container database: `192.168.219.220`.
 
-Catatan ketentuan Nama+NIM: konfigurasi saat ini memakai nama container generik sesuai README. Jika dosen mewajibkan Nama+NIM dan oktet akhir IP dari 3 digit NIM, ubah `container_name` dan subnet/IP pada `docker-compose.yml` sebelum dikumpulkan.
+IP web memakai oktet terakhir `219`, sesuai 3 digit akhir NIM. IP database memakai `.220` karena IP `.219` sudah dipakai container web.
 
 Cara menjalankan:
 
@@ -48,7 +52,7 @@ flowchart LR
     Browser["Browser pengguna"] -->|HTTP 8080| Redirect["Apache redirect"]
     Redirect -->|301| HTTPS["HTTPS 8443"]
     Browser -->|TLS| Web["Container web: Apache + PHP"]
-    Web --> DB["Container db: MySQL"]
+    Web --> DB["Container db: MySQL 192.168.219.220"]
     Web --> Session["Cookie session aman"]
     Web --> Limit["Validasi panjang input"]
 ```
