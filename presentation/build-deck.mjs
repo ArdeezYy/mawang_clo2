@@ -120,7 +120,7 @@ addSlide(
         style: { fontSize: 96, bold: true, color: colors.tealDark },
       }),
       rule({ name: "cover-rule", width: fixed(360), stroke: colors.teal, weight: 8 }),
-      text("Pengamanan aplikasi web target 80 poin: HTTPS, hash password dengan salt, dan pembatasan input berlebihan.", {
+      text("Pengamanan aplikasi web target 80 poin: HTTPS, hash+salt, input limit, SQL injection, dan XSS.", {
         name: "cover-subtitle",
         width: wrap(1280),
         height: hug,
@@ -154,9 +154,9 @@ addSlide(
       [
         method("HTTPS/TLS", "Mengenkripsi trafik browser ke Apache dengan self-signed certificate RSA 2048-bit."),
         method("Hash + salt", "Password disimpan memakai password_hash() dan diverifikasi dengan password_verify()."),
-        method("HTTPS/TLS", "Apache memakai self-signed certificate RSA 2048-bit untuk demo lokal."),
-        method("Hash + salt", "Password disimpan memakai password_hash() dengan salt otomatis."),
         method("Input limit", "Komentar dibatasi maksimal 500 karakter di sisi server."),
+        method("SQL injection", "Query login dan komentar memakai prepared statement PDO."),
+        method("XSS", "Output komentar di-escape dengan htmlspecialchars()."),
         method("Admin proof", "Panel admin menampilkan hash password, bukan plaintext."),
       ],
     ),
@@ -170,12 +170,12 @@ addSlide(
       [
         method("Browser", "Membuka localhost:8443 dan menerima cookie session aman.", colors.ink),
         text("->", { width: fixed(60), height: hug, style: { fontSize: 44, bold: true, color: colors.teal } }),
-        method("Apache + PHP", "Redirect HTTP ke HTTPS, autentikasi, dan validasi panjang input.", colors.tealDark),
+        method("Apache + PHP", "Redirect HTTP ke HTTPS, autentikasi, validasi input, prepared statement, dan escaping.", colors.tealDark),
         text("->", { width: fixed(60), height: hug, style: { fontSize: 44, bold: true, color: colors.teal } }),
         method("MySQL", "Menyimpan tabel users dan comments di network Docker kelas C.", colors.ink),
       ],
     ),
-    text("Docker network: 192.168.240.0/24 | web: 192.168.240.10 | db: 192.168.240.11", {
+    text("Docker network: 192.168.219.0/24 | web: 192.168.219.219 | db: 192.168.219.220", {
       name: "network-note",
       width: fill,
       height: hug,
@@ -185,24 +185,26 @@ addSlide(
 );
 
 addSlide(
-  shell("Metode mitigasi target 80", "Scope berhenti sampai buffer overflow/input berlebih sesuai target nilai.", [
+  shell("Metode mitigasi target 80", "Kontrol disesuaikan dengan rubrik SSL, hash+salt, buffer, SQLi, dan XSS.", [
     bullets([
       "SSL/TLS: HTTP diarahkan ke HTTPS dan sertifikat memakai RSA 2048-bit.",
       "Hash + salt: password admin tersimpan sebagai bcrypt hash, bukan plaintext.",
       "Buffer overflow/input abuse: komentar lebih dari 500 karakter ditolak.",
-      "Admin panel: hash password ditampilkan sebagai bukti penyimpanan aman.",
+      "SQL injection: payload login ditolak karena prepared statement.",
+      "XSS: payload script tampil sebagai teks karena output escaping.",
     ]),
   ]),
 );
 
 addSlide(
-  shell("Demo uji target", "Urutan demo difokuskan pada tiga kontrol yang diklaim.", [
+  shell("Demo uji target", "Urutan demo difokuskan pada kontrol target 80 yang diklaim.", [
     bullets([
       "Buka HTTPS dan inspeksi sertifikat self-signed.",
       "Akses /comment.php tanpa login, lalu login sebagai admin.",
       "Buka /admin.php dan tunjukkan kolom password hash.",
       "Jelaskan prefix bcrypt $2y$10$ dan segmen salt.",
       "Kirim komentar lebih dari 500 karakter dan tunjukkan penolakan server.",
+      "Coba payload SQL injection dan XSS, lalu tunjukkan keduanya gagal.",
     ]),
   ]),
 );
@@ -210,7 +212,7 @@ addSlide(
 addSlide(
   shell("Kesimpulan dan saran", "Aplikasi memenuhi kontrol minimum proyek dan masih bisa dikembangkan lebih jauh.", [
     bullets([
-      "Kontrol target 80 aktif: HTTPS, hash+salt, dan pembatasan input.",
+      "Kontrol target 80 aktif: HTTPS, hash+salt, input limit, SQLi, dan XSS.",
       "Dokumentasi mencatat cara menjalankan, arsitektur, metode keamanan, dan skenario uji.",
       "Pengembangan berikutnya: audit log, reset password aman, dan sertifikat CA resmi.",
     ]),

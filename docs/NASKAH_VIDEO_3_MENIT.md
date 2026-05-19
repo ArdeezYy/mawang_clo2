@@ -2,15 +2,15 @@
 
 ## 0:00 - 0:20 Pendahuluan
 
-Assalamualaikum, saya mempresentasikan proyek CLO 2 Keamanan Sistem, yaitu aplikasi Secure Comments. Aplikasi ini adalah papan komentar publik berbasis PHP, Apache, MySQL, dan Docker. Target scope proyek ini adalah 80 poin, yaitu HTTPS, hash dan salt password, serta mitigasi input berlebihan atau buffer overflow.
+Assalamualaikum, saya mempresentasikan proyek CLO 2 Keamanan Sistem, yaitu aplikasi Secure Comments. Aplikasi ini adalah papan komentar publik berbasis PHP, Apache, MySQL, dan Docker. Target scope proyek ini adalah 80 poin, yaitu HTTPS, hash dan salt password, mitigasi input berlebihan atau buffer overflow, SQL injection, dan XSS scripting.
 
 ## 0:20 - 0:45 Teori Singkat
 
-Masalah utama yang ditunjukkan adalah koneksi tidak terenkripsi, password yang tidak aman jika disimpan plaintext, dan input terlalu panjang. Solusi yang dipakai adalah HTTPS/TLS, password hash dengan salt, password policy, dan pembatasan panjang input di sisi server.
+Masalah utama yang ditunjukkan adalah koneksi tidak terenkripsi, password plaintext, input terlalu panjang, SQL injection, dan XSS. Solusi yang dipakai adalah HTTPS/TLS, password hash dengan salt, password policy, pembatasan panjang input, prepared statement, dan escaping output.
 
 ## 0:45 - 1:05 Blok Diagram
 
-Aplikasi berjalan di Docker Compose. Browser mengakses Apache/PHP melalui HTTPS port 8443. Apache juga menerima HTTP port 8080 lalu redirect ke HTTPS. PHP terhubung ke MySQL untuk menyimpan users dan comments. Session memakai cookie aman, dan input komentar dibatasi maksimal 500 karakter.
+Aplikasi berjalan di Docker Compose. Browser mengakses Apache/PHP melalui HTTPS port 8443. Apache juga menerima HTTP port 8080 lalu redirect ke HTTPS. PHP terhubung ke MySQL untuk menyimpan users dan comments. Session memakai cookie aman, input komentar dibatasi maksimal 500 karakter, query memakai prepared statement, dan output komentar di-escape.
 
 ## 1:05 - 2:25 Demo Aplikasi dan Uji
 
@@ -22,13 +22,15 @@ Ketiga, saya login memakai akun admin `admin` dengan password `Admin@240!`, lalu
 
 Keempat, pada tabel users terlihat kolom password hash. Password plaintext tidak disimpan. Hash memakai format bcrypt, diawali `$2y$10$`, dan salt bcrypt berada pada 22 karakter setelah prefix tersebut.
 
-Kelima, saya mencoba menulis komentar normal. Komentar tersimpan dan tampil di halaman utama.
+Kelima, saya mencoba payload SQL injection `' OR '1'='1` pada login. Login gagal karena input diproses sebagai data melalui prepared statement.
 
-Keenam, saya mencoba komentar lebih dari 500 karakter. Server menolak input tersebut, sehingga input terlalu panjang tidak masuk ke database. Ini menunjukkan mitigasi input abuse atau buffer overflow pada aplikasi web.
+Keenam, saya mencoba komentar lebih dari 500 karakter. Server menolak input tersebut, sehingga input terlalu panjang tidak masuk ke database.
+
+Ketujuh, saya mencoba komentar `<script>alert(1)</script>`. Script tidak berjalan karena output memakai `htmlspecialchars`, sehingga payload tampil sebagai teks.
 
 ## 2:25 - 2:50 Kesimpulan
 
-Kesimpulannya, aplikasi ini berhasil menerapkan tiga kontrol sesuai target 80 poin: HTTPS/TLS pada web server, password hash dengan salt, dan pembatasan input untuk mencegah input berlebihan.
+Kesimpulannya, aplikasi ini berhasil menerapkan kontrol target 80 poin: HTTPS/TLS pada web server, password hash dengan salt, pembatasan input, prepared statement untuk SQL injection, dan escaping output untuk XSS.
 
 ## 2:50 - 3:00 Saran
 

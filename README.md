@@ -7,6 +7,8 @@ Scope yang ditunjukkan:
 - Konfigurasi HTTPS/SSL pada web server.
 - Password disimpan dengan hash dan salt.
 - Input komentar dibatasi untuk mitigasi buffer overflow/input berlebihan.
+- SQL injection dicegah dengan prepared statement.
+- XSS scripting dicegah dengan output escaping.
 
 Identitas instalasi:
 
@@ -61,6 +63,8 @@ Browser akan menampilkan peringatan karena sertifikat SSL dibuat sendiri. Lanjut
 - Halaman signup menampilkan checklist password secara langsung dan tombol daftar hanya aktif jika password memenuhi syarat.
 - Input komentar dibatasi maksimal 500 karakter di sisi server.
 - Apache memakai `LimitRequestBody` untuk membatasi ukuran request.
+- Login, signup, komentar, dan lookup user memakai prepared statement.
+- Output dari database ditampilkan dengan `htmlspecialchars()`.
 - Admin panel hanya bisa diakses akun dengan role admin.
 - Admin panel menampilkan hash password sebagai bukti bahwa plaintext password tidak disimpan.
 
@@ -73,6 +77,8 @@ Browser akan menampilkan peringatan karena sertifikat SSL dibuat sendiri. Lanjut
 - Inspeksi sertifikat browser pada `https://localhost:8443`; algoritma public key adalah RSA 2048-bit.
 - Cek hash password admin di admin panel; format bcrypt diawali `$2y$10$` dan salt ada pada 22 karakter setelah prefix tersebut.
 - Kirim komentar lebih dari 500 karakter; aplikasi harus menolak.
+- Coba payload SQL injection `' OR '1'='1` di login; aplikasi harus menolak.
+- Coba payload XSS `<script>alert(1)</script>` di komentar; aplikasi harus menampilkan sebagai teks.
 
 ## Deliverable Pendukung
 

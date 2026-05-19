@@ -9,6 +9,8 @@ Scope penilaian yang ditunjukkan:
 - SSL/TLS pada web server.
 - Password disimpan memakai hash dan salt.
 - Pembatasan input untuk mengurangi risiko buffer overflow/input berlebihan.
+- SQL injection dicegah dengan prepared statement.
+- XSS scripting dicegah dengan escaping output.
 
 ## 2. Arsitektur dan Instalasi
 
@@ -55,6 +57,8 @@ flowchart LR
     Web --> DB["Container db: MySQL 192.168.219.220"]
     Web --> Session["Cookie session aman"]
     Web --> Limit["Validasi panjang input"]
+    Web --> SQLi["Prepared statement"]
+    Web --> XSS["Escape output HTML"]
 ```
 
 ## 4. Fitur Aplikasi
@@ -116,6 +120,27 @@ Aplikasi web PHP tidak memakai buffer manual seperti C, tetapi risiko input berl
 
 Jika komentar lebih dari 500 karakter dikirim, server menolak input tersebut dan tidak menyimpannya ke database.
 
+### SQL Injection
+
+Login, signup, komentar, dan query user memakai prepared statement PDO. Contoh pada login:
+
+```php
+$stmt = $pdo->prepare('SELECT id, username, password_hash, role FROM users WHERE username = ? LIMIT 1');
+$stmt->execute([$username]);
+```
+
+Payload seperti `' OR '1'='1` diperlakukan sebagai teks username, bukan perintah SQL. Hasil uji pada mode secure: payload tersebut gagal login.
+
+### XSS Scripting
+
+Output user dari database ditampilkan melalui fungsi `e()`:
+
+```php
+htmlspecialchars($value ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
+```
+
+Payload `<script>alert(1)</script>` tampil sebagai teks `&lt;script&gt;alert(1)&lt;/script&gt;`, sehingga script tidak dieksekusi browser.
+
 ## 6. Skenario Uji
 
 | No | Skenario | Hasil yang diharapkan |
@@ -128,11 +153,31 @@ Jika komentar lebih dari 500 karakter dikirim, server menolak input tersebut dan
 | 6 | Inspeksi sertifikat HTTPS | Public key RSA 2048-bit terlihat |
 | 7 | Cek hash admin di panel admin | Hash bcrypt bersalt tampil, bukan plaintext |
 | 8 | Komentar lebih dari 500 karakter | Ditolak |
+| 9 | Login payload `' OR '1'='1` | Gagal login |
+| 10 | Komentar payload `<script>alert(1)</script>` | Tampil sebagai teks, tidak dieksekusi |
 
-## 7. Kesimpulan
+## 7. Bukti Uji Terakhir
 
-Aplikasi memenuhi scope target 80 poin: transport dienkripsi dengan HTTPS, password diamankan memakai hash dan salt, serta input komentar dibatasi untuk mengurangi risiko buffer overflow/input berlebihan.
+| Kontrol | Bukti runtime |
+| --- | --- |
+| HTTPS | `https://localhost:8443` mengembalikan HTTP 200 |
+| Redirect HTTPS | `http://localhost:8080` redirect 301 ke HTTPS |
+| Algoritma kunci publik | Sertifikat menunjukkan `rsaEncryption`, public key 2048 bit |
+| Hash dan salt | Password admin di DB berbentuk bcrypt `$2y$10$...`, panjang 60 karakter |
+| Buffer/input abuse | Komentar 501 karakter ditolak, jumlah data `CHAR_LENGTH(body)>500` tidak bertambah |
+| SQL injection | Payload login `' OR '1'='1` gagal masuk |
+| XSS | Payload `<script>alert(1)</script>` tampil escaped sebagai teks |
 
-## 8. Catatan Penggunaan AI
+## 8. Tautan Video
+
+Tautan video presentasi: `ISI_LINK_VIDEO_SETELAH_UPLOAD`
+
+Catatan: tautan ini perlu diganti dengan link video yang sudah diunggah sebelum dokumen dikumpulkan ke LMS.
+
+## 9. Kesimpulan
+
+Aplikasi memenuhi scope target 80 poin: transport dienkripsi dengan HTTPS, password diamankan memakai hash dan salt, input komentar dibatasi untuk mengurangi risiko buffer overflow/input berlebihan, SQL injection dicegah dengan prepared statement, dan XSS dicegah dengan output escaping.
+
+## 10. Catatan Penggunaan AI
 
 Bantuan AI digunakan untuk menyusun dan mengimplementasikan aplikasi, dokumentasi, naskah video, dan presentasi berdasarkan instruksi tugas serta README. Jika aturan kelas membatasi AI hanya untuk editing, mahasiswa perlu menyesuaikan dokumen akhir dengan versi asli/manual yang dimiliki dan melampirkan versi asli sebelum diedit AI.
