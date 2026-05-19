@@ -10,7 +10,6 @@ Scope penilaian yang ditunjukkan:
 - Password disimpan memakai hash dan salt.
 - Pembatasan input untuk mengurangi risiko buffer overflow/input berlebihan.
 - SQL injection dicegah dengan prepared statement.
-- XSS scripting dicegah dengan escaping output.
 
 ## 2. Arsitektur dan Instalasi
 
@@ -58,7 +57,6 @@ flowchart LR
     Web --> Session["Cookie session aman"]
     Web --> Limit["Validasi panjang input"]
     Web --> SQLi["Prepared statement"]
-    Web --> XSS["Escape output HTML"]
 ```
 
 ## 4. Fitur Aplikasi
@@ -131,16 +129,6 @@ $stmt->execute([$username]);
 
 Payload seperti `' OR '1'='1` diperlakukan sebagai teks username, bukan perintah SQL. Hasil uji pada mode secure: payload tersebut gagal login.
 
-### XSS Scripting
-
-Output user dari database ditampilkan melalui fungsi `e()`:
-
-```php
-htmlspecialchars($value ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
-```
-
-Payload `<script>alert(1)</script>` tampil sebagai teks `&lt;script&gt;alert(1)&lt;/script&gt;`, sehingga script tidak dieksekusi browser.
-
 ## 6. Skenario Uji
 
 | No | Skenario | Hasil yang diharapkan |
@@ -154,7 +142,6 @@ Payload `<script>alert(1)</script>` tampil sebagai teks `&lt;script&gt;alert(1)&
 | 7 | Cek hash admin di panel admin | Hash bcrypt bersalt tampil, bukan plaintext |
 | 8 | Komentar lebih dari 500 karakter | Ditolak |
 | 9 | Login payload `' OR '1'='1` | Gagal login |
-| 10 | Komentar payload `<script>alert(1)</script>` | Tampil sebagai teks, tidak dieksekusi |
 
 ## 7. Bukti Uji Terakhir
 
@@ -166,7 +153,8 @@ Payload `<script>alert(1)</script>` tampil sebagai teks `&lt;script&gt;alert(1)&
 | Hash dan salt | Password admin di DB berbentuk bcrypt `$2y$10$...`, panjang 60 karakter |
 | Buffer/input abuse | Komentar 501 karakter ditolak, jumlah data `CHAR_LENGTH(body)>500` tidak bertambah |
 | SQL injection | Payload login `' OR '1'='1` gagal masuk |
-| XSS | Payload `<script>alert(1)</script>` tampil escaped sebagai teks |
+
+XSS scripting dan brute force tidak menjadi scope target 80 branch ini.
 
 ## 8. Tautan Video
 
@@ -176,7 +164,7 @@ Catatan: tautan ini perlu diganti dengan link video yang sudah diunggah sebelum 
 
 ## 9. Kesimpulan
 
-Aplikasi memenuhi scope target 80 poin: transport dienkripsi dengan HTTPS, password diamankan memakai hash dan salt, input komentar dibatasi untuk mengurangi risiko buffer overflow/input berlebihan, SQL injection dicegah dengan prepared statement, dan XSS dicegah dengan output escaping.
+Aplikasi memenuhi scope target 80 poin: transport dienkripsi dengan HTTPS, password diamankan memakai hash dan salt, input komentar dibatasi untuk mengurangi risiko buffer overflow/input berlebihan, dan SQL injection dicegah dengan prepared statement.
 
 ## 10. Catatan Penggunaan AI
 

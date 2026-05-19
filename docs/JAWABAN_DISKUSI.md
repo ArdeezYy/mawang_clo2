@@ -20,9 +20,8 @@ Scope keamanan target 80:
 - Hash dan salt pada password.
 - Mitigasi input berlebihan / buffer overflow.
 - Pencegahan SQL injection.
-- Pencegahan XSS scripting.
 
-Brute force belum menjadi scope karena merupakan poin tambahan berikutnya.
+XSS scripting dan brute force belum menjadi scope karena berada di luar target 80 yang dipilih.
 
 ## 1. Konfigurasi SSL/TLS Pada Web Server
 
@@ -136,36 +135,11 @@ Bukti uji: payload username berikut gagal login pada branch `secure-login`:
 ' OR '1'='1
 ```
 
-## 5. Menghindari XSS Scripting
+## 5. XSS Scripting
 
-XSS terjadi ketika input user berisi script lalu ditampilkan kembali sebagai HTML aktif. Proyek ini menampilkan output database melalui fungsi `e()`.
+XSS terjadi ketika input user berisi script lalu ditampilkan kembali sebagai HTML aktif.
 
-Kode:
-
-```php
-function e(?string $value): string
-{
-    return htmlspecialchars($value ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-}
-```
-
-Komentar ditampilkan dengan:
-
-```php
-<p><?= e($comment['body']) ?></p>
-```
-
-Bukti uji: payload berikut tidak dieksekusi browser:
-
-```html
-<script>alert(1)</script>
-```
-
-Payload tampil sebagai teks escaped:
-
-```text
-&lt;script&gt;alert(1)&lt;/script&gt;
-```
+Pada target 80 yang dipilih, XSS belum dijadikan kontrol penilaian utama. Fokus branch `secure-login` untuk target 80 adalah SSL/TLS, hash dan salt password, pembatasan input, dan SQL injection. Jika ingin mengejar poin lebih tinggi, output komentar dapat diamankan kembali dengan `htmlspecialchars()`.
 
 ## 6. Brute Force
 
@@ -180,8 +154,8 @@ Mekanisme brute force seperti rate limiting, captcha, atau account lockout belum
 | Hash dan salt | Password admin berbentuk bcrypt `$2y$10$...` |
 | Buffer/input abuse | Komentar 501 karakter ditolak |
 | SQL injection | Payload `' OR '1'='1` gagal login |
-| XSS scripting | Payload `<script>alert(1)</script>` tampil sebagai teks escaped |
+| XSS scripting | Tidak diklaim pada target 80 |
 
 ## 8. Kesimpulan
 
-Proyek Secure Comments pada branch `secure-login` sudah memenuhi target 80: SSL/TLS, hash dan salt password, pembatasan input untuk mencegah input berlebihan, SQL injection dengan prepared statement, dan XSS dengan output escaping.
+Proyek Secure Comments pada branch `secure-login` sudah memenuhi target 80: SSL/TLS, hash dan salt password, pembatasan input untuk mencegah input berlebihan, dan SQL injection dengan prepared statement.

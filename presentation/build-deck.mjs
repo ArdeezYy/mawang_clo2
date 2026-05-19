@@ -120,7 +120,7 @@ addSlide(
         style: { fontSize: 96, bold: true, color: colors.tealDark },
       }),
       rule({ name: "cover-rule", width: fixed(360), stroke: colors.teal, weight: 8 }),
-      text("Pengamanan aplikasi web target 80 poin: HTTPS, hash+salt, input limit, SQL injection, dan XSS.", {
+      text("Pengamanan aplikasi web target 80 poin: HTTPS, hash+salt, input limit, dan SQL injection.", {
         name: "cover-subtitle",
         width: wrap(1280),
         height: hug,
@@ -156,8 +156,8 @@ addSlide(
         method("Hash + salt", "Password disimpan memakai password_hash() dan diverifikasi dengan password_verify()."),
         method("Input limit", "Komentar dibatasi maksimal 500 karakter di sisi server."),
         method("SQL injection", "Query login dan komentar memakai prepared statement PDO."),
-        method("XSS", "Output komentar di-escape dengan htmlspecialchars()."),
         method("Admin proof", "Panel admin menampilkan hash password, bukan plaintext."),
+        method("Scope", "XSS dan brute force tidak diklaim pada target 80 ini."),
       ],
     ),
   ]),
@@ -170,7 +170,7 @@ addSlide(
       [
         method("Browser", "Membuka localhost:8443 dan menerima cookie session aman.", colors.ink),
         text("->", { width: fixed(60), height: hug, style: { fontSize: 44, bold: true, color: colors.teal } }),
-        method("Apache + PHP", "Redirect HTTP ke HTTPS, autentikasi, validasi input, prepared statement, dan escaping.", colors.tealDark),
+        method("Apache + PHP", "Redirect HTTP ke HTTPS, autentikasi, validasi input, dan prepared statement.", colors.tealDark),
         text("->", { width: fixed(60), height: hug, style: { fontSize: 44, bold: true, color: colors.teal } }),
         method("MySQL", "Menyimpan tabel users dan comments di network Docker kelas C.", colors.ink),
       ],
@@ -185,13 +185,13 @@ addSlide(
 );
 
 addSlide(
-  shell("Metode mitigasi target 80", "Kontrol disesuaikan dengan rubrik SSL, hash+salt, buffer, SQLi, dan XSS.", [
+  shell("Metode mitigasi target 80", "Kontrol disesuaikan dengan rubrik SSL, hash+salt, buffer, dan SQLi.", [
     bullets([
       "SSL/TLS: HTTP diarahkan ke HTTPS dan sertifikat memakai RSA 2048-bit.",
       "Hash + salt: password admin tersimpan sebagai bcrypt hash, bukan plaintext.",
       "Buffer overflow/input abuse: komentar lebih dari 500 karakter ditolak.",
       "SQL injection: payload login ditolak karena prepared statement.",
-      "XSS: payload script tampil sebagai teks karena output escaping.",
+      "XSS dan brute force tidak diklaim pada target 80 ini.",
     ]),
   ]),
 );
@@ -204,7 +204,7 @@ addSlide(
       "Buka /admin.php dan tunjukkan kolom password hash.",
       "Jelaskan prefix bcrypt $2y$10$ dan segmen salt.",
       "Kirim komentar lebih dari 500 karakter dan tunjukkan penolakan server.",
-      "Coba payload SQL injection dan XSS, lalu tunjukkan keduanya gagal.",
+      "Coba payload SQL injection dan tunjukkan login gagal.",
     ]),
   ]),
 );
@@ -212,7 +212,7 @@ addSlide(
 addSlide(
   shell("Kesimpulan dan saran", "Aplikasi memenuhi kontrol minimum proyek dan masih bisa dikembangkan lebih jauh.", [
     bullets([
-      "Kontrol target 80 aktif: HTTPS, hash+salt, input limit, SQLi, dan XSS.",
+      "Kontrol target 80 aktif: HTTPS, hash+salt, input limit, dan SQLi.",
       "Dokumentasi mencatat cara menjalankan, arsitektur, metode keamanan, dan skenario uji.",
       "Pengembangan berikutnya: audit log, reset password aman, dan sertifikat CA resmi.",
     ]),
